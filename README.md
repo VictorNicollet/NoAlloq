@@ -4,6 +4,8 @@ The [official stance](https://github.com/dotnet/runtime/issues/26082) for using 
 
 NoAlloq aims to provide basic LINQ functionality on top of `Span<T>`, **without** allocating any memory. Since some LINQ features (such as `.Reverse()` or `.OrderBy()`) require storing the entire sequence in memory, NoAlloq requires the user to provide their own memory backing.
 
+NuGet Package : `NoAlloq`
+
 You can contact the author at: victor@nicollet.net
 
 ## Usage examples
