@@ -62,7 +62,7 @@ namespace NoAlloq
         public static SpanEnumerable<TV, TV,
             SecondaryWhereDelegateProducer<TV, TV, 
                 OrderingProducer<TV, TK, TC, TE>>>
-            Shere<TV, TK, TC, TE>(
+            Where<TV, TK, TC, TE>(
                 this OrderingPlan<TV, TK, TC, TE> plan,
                 Predicate<TV> predicate)
             where TC : IComparer<TK>
