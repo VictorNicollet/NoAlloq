@@ -55,5 +55,57 @@ namespace NoAlloq.Tests
             for (var i = 0; i < 10; ++i)
                 Assert.Equal(i + 1, number[i]);
         }
+
+        [Fact]
+        public void ascending_then_descending()
+        {
+            var strings = new[] { "a", "b", "aa", "c", "cd" };
+
+            strings.AsSpan()
+                   .OrderBy(strings, s => s.Length)
+                   .ThenByDescending(s => s[0])
+                   .CopyInto(strings);
+
+            Assert.Equal(new[] { "c", "b", "a", "cd", "aa" }, strings);
+        }
+
+        [Fact]
+        public void ascending_then_ascending()
+        {
+            var strings = new[] { "a", "b", "aa", "c", "cd" };
+
+            strings.AsSpan()
+                   .OrderBy(strings, s => s.Length)
+                   .ThenBy(s => s[0])
+                   .CopyInto(strings);
+
+            Assert.Equal(new[] { "a", "b", "c", "aa", "cd" }, strings);
+        }
+
+        [Fact]
+        public void descending_then_ascending()
+        {
+            var strings = new[] { "a", "b", "aa", "c", "cd" };
+
+            strings.AsSpan()
+                   .OrderByDescending(strings, s => s.Length)
+                   .ThenBy(s => s[0])
+                   .CopyInto(strings);
+
+            Assert.Equal(new[] { "aa", "cd", "a", "b", "c" }, strings);
+        }
+
+        [Fact]
+        public void descending_then_descending()
+        {
+            var strings = new[] { "a", "b", "aa", "c", "cd" };
+
+            strings.AsSpan()
+                   .OrderByDescending(strings, s => s.Length)
+                   .ThenByDescending(s => s[0])
+                   .CopyInto(strings);
+
+            Assert.Equal(new[] { "cd", "aa", "c", "b", "a" }, strings);
+        }
     }
 }

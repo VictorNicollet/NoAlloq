@@ -103,7 +103,12 @@ For convenience, NoAlloq also provides variants for the case where the key selec
  - `.OrderByValueDescending(Span<T> backing)`
  - `.OrderByValueDescending(Span<T> backing, IComparer<T> comparer)`
 
-Right now, `.ThenBy()` and `.ThenByDescending()` are not supported, but they should be soon enough.
+The above methods return an `OrderingPlan<..>` instance, which supports all usual NoAlloq methods in addition to: 
+
+ - `.ThenBy(Func<T, TK> keySelector)`
+ - `.ThenBy(Func<T, TK> keySelector, IComparer<TK> comparer)`
+ - `.ThenByDescending(Func<T, TK> keySelector)`
+ - `.ThenByDescending(Func<T, TK> keySelector, IComparer<TK> comparer)`
 
 #### In-place operations
 

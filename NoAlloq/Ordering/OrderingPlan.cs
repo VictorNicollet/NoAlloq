@@ -3,52 +3,6 @@ using System.Collections.Generic;
 
 namespace NoAlloq.Ordering
 {
-    /// <summary> Extracts comparable keys from values. </summary>
-    /// <remarks> 
-    ///     Used for constructing comparisons in an order-by.
-    /// </remarks>
-    public interface IKeyExtractor<TValue, TKey>
-    {
-        /// <summary> The key to use when comparing a value. </summary>
-        TKey Extract(TValue v);
-    }
-
-    /// <summary> Extracts the value itself to act as a comparison key. </summary>
-    public struct IdentityExtractor<TValue> : IKeyExtractor<TValue, TValue>
-    {
-        /// <see cref="IKeyExtractor{TValue, TKey}.Extract(TValue)"/>
-        public TValue Extract(TValue v) => v;
-    }
-
-    public struct DelegateExtractor<TValue, TKey> : IKeyExtractor<TValue, TKey>
-    {
-        private Func<TValue, TKey> _delegate;
-
-        public DelegateExtractor(Func<TValue, TKey> d)
-        {
-            _delegate = d ?? throw new ArgumentNullException(nameof(d));
-        }
-
-        /// <see cref="IKeyExtractor{TValue, TKey}.Extract(TValue)"/>
-        public TKey Extract(TValue v) => _delegate(v);
-    }
-
-    public struct DescendingComparer<TKey, TComparer> : IComparer<TKey>
-        where TComparer : IComparer<TKey>
-    {
-        /// <summary> The ascending comparer. </summary>
-        private readonly TComparer _inner;
-
-        public DescendingComparer(TComparer inner)
-        {
-            _inner = inner;
-        }
-
-        /// <see cref="IComparer{T}.Compare(T, T)"/>
-        public int Compare(TKey x, TKey y) =>
-            _inner.Compare(y, x);
-    }
-
     /// <summary> An ordering plan on top of a span of values. </summary>
     public ref struct OrderingPlan<TValue, TKey, TComparer, TExtractor>
         where TExtractor : struct, IKeyExtractor<TValue, TKey>
@@ -76,6 +30,85 @@ namespace NoAlloq.Ordering
         /// <summary> The number of elements to be ordered. </summary>
         public int Length => ToBeSorted.Length;
 
+        #region ThenBy & ThenByDescending
+
+        /// <summary>
+        ///     Performs a subsequent ordering of elements in ascending order.
+        /// </summary>
+        public OrderingPlan<
+                TValue,
+                (TKey, TKey2),
+                PairComparer<TKey, TKey2, TComparer, TComparer2>,
+                ThenDelegateExtractor<TValue, TKey, TExtractor, TKey2>>
+            ThenBy<TKey2, TComparer2>(
+                Func<TValue, TKey2> keySelector,
+                TComparer2 comparer)
+            where TComparer2 : IComparer<TKey2>
+        =>
+            new OrderingPlan<
+                TValue,
+                (TKey, TKey2),
+                PairComparer<TKey, TKey2, TComparer, TComparer2>,
+                ThenDelegateExtractor<TValue, TKey, TExtractor, TKey2>>(
+                    new ThenDelegateExtractor<TValue, TKey, TExtractor, TKey2>(
+                        _extractor, keySelector),
+                    new PairComparer<TKey, TKey2, TComparer, TComparer2>(
+                        _comparer, comparer),
+                    ToBeSorted);
+
+        /// <summary>
+        ///     Performs a subsequent ordering of elements in ascending order.
+        /// </summary>
+        public OrderingPlan<
+                TValue,
+                (TKey, TKey2),
+                PairComparer<TKey, TKey2, TComparer, Comparer<TKey2>>,
+                ThenDelegateExtractor<TValue, TKey, TExtractor, TKey2>>
+            ThenBy<TKey2>(
+                Func<TValue, TKey2> keySelector)
+        =>
+            ThenBy(keySelector, Comparer<TKey2>.Default);
+
+        /// <summary>
+        ///     Performs a subsequent ordering of elements in ascending order.
+        /// </summary>
+        public OrderingPlan<
+                TValue,
+                (TKey, TKey2),
+                PairComparer<TKey, TKey2, TComparer, 
+                    DescendingComparer<TKey2, TComparer2>>,
+                ThenDelegateExtractor<TValue, TKey, TExtractor, TKey2>>
+            ThenByDescending<TKey2, TComparer2>(
+                Func<TValue, TKey2> keySelector,
+                TComparer2 comparer)
+            where TComparer2 : IComparer<TKey2>
+        =>
+            new OrderingPlan<
+                TValue,
+                (TKey, TKey2),
+                PairComparer<TKey, TKey2, TComparer, DescendingComparer<TKey2, TComparer2>>,
+                ThenDelegateExtractor<TValue, TKey, TExtractor, TKey2>>(
+                    new ThenDelegateExtractor<TValue, TKey, TExtractor, TKey2>(
+                        _extractor, keySelector),
+                    new PairComparer<TKey, TKey2, TComparer, DescendingComparer<TKey2, TComparer2>>(
+                        _comparer, new DescendingComparer<TKey2, TComparer2>(comparer)),
+                    ToBeSorted);
+
+        /// <summary>
+        ///     Performs a subsequent ordering of elements in ascending order.
+        /// </summary>
+        public OrderingPlan<
+                TValue,
+                (TKey, TKey2),
+                PairComparer<TKey, TKey2, TComparer, DescendingComparer<TKey2, Comparer<TKey2>>>,
+                ThenDelegateExtractor<TValue, TKey, TExtractor, TKey2>>
+            ThenByDescending<TKey2>(
+                Func<TValue, TKey2> keySelector)
+        =>
+            ThenByDescending(keySelector, Comparer<TKey2>.Default);
+
+        #endregion
+
         /// <summary>
         ///     Construct a <see cref="SpanEnumerable{TIn, TOut, TProducer}"/> from 
         ///     this ordering plan.
@@ -97,5 +130,4 @@ namespace NoAlloq.Ordering
                 length: ToBeSorted.Length);
         }
     }
-
 }

@@ -109,7 +109,7 @@ namespace NoAlloq
         public static Span<TOut> CopyInto<TOut, TProducer>(
            this SpanEnumerable<TOut, TProducer> spanEnum,
            Span<TOut> output)
-           where TProducer : struct, IProducer<TOut>
+           where TProducer : IProducer<TOut>
         {
             var result = spanEnum.ConsumeInto(output);
 
@@ -170,6 +170,53 @@ namespace NoAlloq
         /// </summary>
         public static void CopyInto<T>(this Span<T> span, ICollection<T> output) =>
             CopyInto((ReadOnlySpan<T>)span, output);
+
+        /// <summary>
+        ///     Takes values from the sequence to fill the 
+        ///     provided array, throws if the array is not large enough to 
+        ///     contain all elements from the sequence. 
+        /// </summary>
+        /// <returns>
+        ///     Returns the span, maybe resized if 
+        ///     there were not enough values in the enumerable.
+        /// </returns>
+        public static Span<TOut> CopyInto<TIn, TOut, TProducer>(
+           this SpanEnumerable<TIn, TOut, TProducer> spanEnum,
+           TOut[] output)
+           where TProducer : IProducer<TIn, TOut>
+        =>
+            spanEnum.CopyInto(output.AsSpan());
+
+        /// <summary>
+        ///     Takes values from the sequence to fill the 
+        ///     provided array, throws if the array is not large enough to 
+        ///     contain all elements from the sequence. 
+        /// </summary>
+        /// <returns>
+        ///     Returns the span, maybe resized if 
+        ///     there were not enough values in the enumerable.
+        /// </returns>
+        public static Span<TOut> CopyInto<TOut, TProducer>(
+            this SpanEnumerable<TOut, TProducer> spanEnum,
+            TOut[] output)
+            where TProducer : IProducer<TOut>
+        =>
+            spanEnum.CopyInto(output.AsSpan());
+
+        /// <summary>
+        ///     Takes values from the sequence to fill the 
+        ///     provided array, throws if the array is not large enough to 
+        ///     contain all elements from the sequence. 
+        /// </summary>
+        /// <returns>
+        ///     Returns the span, maybe resized if 
+        ///     there were not enough values in the enumerable.
+        /// </returns>
+        public static Span<TOut> CopyInto<TOut>(
+           this SpanEnumerable<TOut> spanEnum,
+           TOut[] output)
+        =>
+            spanEnum.CopyInto(output.AsSpan());
 
         /// <summary>
         ///     Takes values from the sequence to fill the provided collection.
@@ -279,6 +326,23 @@ namespace NoAlloq
         public static void CopyInto<TV, TK, TC, TE>(
                 this OrderingPlan<TV, TK, TC, TE> plan,
                 Span<TV> output)
+            where TC : IComparer<TK>
+            where TE : struct, IKeyExtractor<TV, TK>
+        =>
+            plan.ToEnumerable().CopyInto(output);
+
+        /// <summary>
+        ///     Takes values from the sequence to fill the 
+        ///     provided span, throws if the span is not large enough to 
+        ///     contain all elements from the sequence. 
+        /// </summary>
+        /// <returns>
+        ///     Returns the span, maybe resized if 
+        ///     there were not enough values in the enumerable.
+        /// </returns>
+        public static void CopyInto<TV, TK, TC, TE>(
+                this OrderingPlan<TV, TK, TC, TE> plan,
+                TV[] output)
             where TC : IComparer<TK>
             where TE : struct, IKeyExtractor<TV, TK>
         =>
