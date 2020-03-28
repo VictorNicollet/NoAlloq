@@ -47,6 +47,23 @@ namespace NoAlloq
             }
         }
 
+        /// <summary>
+        ///     Create an array containing all elements from the input 
+        ///     sequence.
+        /// </summary>
+        public static TOut[] ToArray<TOut>(this SpanEnumerable<TOut> spanEnum)
+        {
+            if (spanEnum.KnownLength)
+            {
+                var array = new TOut[spanEnum.Length];
+                spanEnum.ConsumeInto(array);
+                return array;
+            }
+            else
+            {
+                return spanEnum.ToList().ToArray();
+            }
+        }
 
         /// <summary>
         ///     Create a hash set containing all elements from the input 
@@ -75,12 +92,39 @@ namespace NoAlloq
         }
 
         /// <summary>
+        ///     Create a hash set containing all elements from the input 
+        ///     sequence.
+        /// </summary>
+        public static HashSet<TOut> ToHashSet<TOut>(
+            this SpanEnumerable<TOut> spanEnum)
+        {
+            var set = new HashSet<TOut>();
+            spanEnum.CopyInto(set);
+            return set;
+        }
+
+        /// <summary>
         ///     Create a list containing all elements from the input 
         ///     sequence.
         /// </summary>
         public static List<TOut> ToList<TOut, TProducer>(
             this SpanEnumerable<TOut, TProducer> spanEnum)
             where TProducer : IProducer<TOut>
+        {
+            var list = spanEnum.KnownLength
+                ? new List<TOut>(spanEnum.Length)
+                : new List<TOut>();
+
+            spanEnum.CopyInto(list);
+
+            return list;
+        }
+
+        /// <summary>
+        ///     Create a list containing all elements from the input 
+        ///     sequence.
+        /// </summary>
+        public static List<TOut> ToList<TOut>(this SpanEnumerable<TOut> spanEnum)
         {
             var list = spanEnum.KnownLength
                 ? new List<TOut>(spanEnum.Length)
@@ -117,6 +161,24 @@ namespace NoAlloq
             Func<TOut, TK> key,
             Func<TOut, TV> value)
             where TProducer : IProducer<TOut>
+        {
+            var dict = spanEnum.KnownLength
+                ? new Dictionary<TK, TV>(spanEnum.Length)
+                : new Dictionary<TK, TV>();
+
+            spanEnum.CopyInto(dict, key, value);
+
+            return dict;
+        }
+
+        /// <summary>
+        ///     Create a dictionary containing all elements from the input 
+        ///     sequence.
+        /// </summary>
+        public static Dictionary<TK, TV> ToDictionary<TOut, TK, TV>(
+            this SpanEnumerable<TOut> spanEnum,
+            Func<TOut, TK> key,
+            Func<TOut, TV> value)
         {
             var dict = spanEnum.KnownLength
                 ? new Dictionary<TK, TV>(spanEnum.Length)

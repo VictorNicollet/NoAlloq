@@ -20,6 +20,20 @@ namespace NoAlloq.Tests
         }
 
         [Fact]
+        public void times_two_delegate_boxed()
+        {
+            Span<int> values = stackalloc int[4] { 1, 2, 3, 4 };
+            Span<int> result = stackalloc int[6];
+
+            result = values.Select(v => v * 2).Box().ReverseInto(result);
+
+            Assert.Equal(4, result.Length);
+
+            for (var i = 0; i < result.Length; ++i)
+                Assert.Equal(2 * (4 - i), result[i]);
+        }
+
+        [Fact]
         public void in_place()
         {
             Span<int> values = stackalloc int[4] { 1, 2, 3, 4 };
@@ -38,6 +52,19 @@ namespace NoAlloq.Tests
             Span<int> result = stackalloc int[6];
 
             result = SpanEnumerable.Range(1, 6).ReverseInto(result);
+
+            Assert.Equal(6, result.Length);
+
+            for (var i = 0; i < result.Length; ++i)
+                Assert.Equal(6 - i, result[i]);
+        }
+
+        [Fact]
+        public void range_boxed()
+        {
+            Span<int> result = stackalloc int[6];
+
+            result = SpanEnumerable.Range(1, 6).Box().ReverseInto(result);
 
             Assert.Equal(6, result.Length);
 

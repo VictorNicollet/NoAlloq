@@ -41,6 +41,20 @@ namespace NoAlloq
         }
 
         /// <summary> Whether a sequence contains only 'true'. </summary>
+        public static bool AllTrue(this SpanEnumerable<bool> spanEnum)
+        {
+            bool onStack = default;
+            Span<bool> spanOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            while (true)
+            {
+                spanOnStack = spanEnum.ConsumeInto(spanOnStack);
+                if (spanOnStack.Length == 0) return true;
+                if (!onStack) return false;
+            }
+        }
+
+        /// <summary> Whether a sequence contains only 'true'. </summary>
         public static bool AllTrue(this ReadOnlySpan<bool> span)
         {
             foreach (var b in span)
@@ -84,6 +98,27 @@ namespace NoAlloq
             this SpanEnumerable<TOut, TProducer> spanEnum,
             Predicate<TOut> predicate)
             where TProducer : struct, IProducer<TOut>
+        {
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+
+            TOut onStack = default;
+            var spanOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            while (spanEnum.ConsumeInto(spanOnStack).Length > 0)
+                if (!predicate(onStack))
+                    return false;
+
+            return true;
+        }
+
+        /// <summary> 
+        ///     Whether the predicate returns true for all elements
+        ///     in a sequence.
+        /// </summary>
+        public static bool All<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Predicate<TOut> predicate)
         {
             if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate));

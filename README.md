@@ -160,7 +160,7 @@ Dictionary<string, int> dict2 = new Dictionary<string, int>();
 strings.CopyInto(dict2, s => s, s => s.Length)
 ```
 
-## Issues and Limitations
+## Returning or passing as arguments
 
 Since any type capable of reading from a `Span<T>` must be a `ref struct`, the `SpanEnumerable` defined by NoAlloq cannot be stored as a member in a class or non-`ref` struct and cannot be used within the same function as `await` or `yield return`. 
 
@@ -179,7 +179,32 @@ SpanEnumerable<User, User,
         OrderingProducer<User, string, DelegateExtractor<User, string>, Comparer<string>>>> 
 ```
 
-As such, creating a function that returns such a value, or takes such a value as argument, is rather tedious, even by using generics and constraints: 
+As such, creating a function that returns such a value, or takes such a value as argument, is rather tedious, even by using generics and constraints. To alleviate this, NoAlloq provides the `SpanEnumerable<T>` type which hides the above details from the type _at the cost of a memory allocation_. To convert the result of an arbitrary NoAlloq enumerable to a `SpanEnumerable<T>`, call its `.Box()` method:
+
+```
+Span<int> numbers = stackalloc int[] {...};
+
+var smallest10oddNumbers = numbers
+	.Where(n => n % 2 != 1)
+	.OrderByValueDescending(numbers)
+	.Slice(0, 10);
+
+SpanEnumerable<int> boxed = smallest10oddNumbers.Box();
+```
+
+The `SpanEnumerable<T>` is a `ref struct` that supports the same NoAlloq operations as its unboxed source.
+
+If your enumerable was constructed from a `Span<T>`, `.Box()` will only be allowed if `T` is an unmanaged type (managed types may contain references, and so cannot be hidden from the compiler).
+
+```
+Span<User> users = ...; // 'User' is a class
+
+users.Where(s => s.IsActive)
+     .Box() // not allowed, original T is 'User'
+```
+
+## Issues and Limitations
+
 
 ```csharp
 WithAliveUsers(SpanEnumerable<User, User, TProducer> aliveUsers)

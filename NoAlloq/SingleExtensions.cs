@@ -26,6 +26,24 @@ namespace NoAlloq
         }
 
         /// <summary> The single element of a sequence. </summary>
+        public static TOut Single<TOut>(
+            this SpanEnumerable<TOut> spanEnum)
+        {
+            TOut onStack = default;
+            Span<TOut> outOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            if (spanEnum.ConsumeInto(outOnStack).Length == 0)
+                throw new InvalidOperationException("The input sequence is empty.");
+
+            var single = onStack;
+
+            if (spanEnum.ConsumeInto(outOnStack).Length != 0)
+                throw new InvalidOperationException("The input sequence contains more than one element.");
+
+            return single;
+        }
+
+        /// <summary> The single element of a sequence. </summary>
         public static T Single<T>(this ReadOnlySpan<T> span)
         {
             if (span.Length == 0)
@@ -48,6 +66,15 @@ namespace NoAlloq
             this SpanEnumerable<TIn, TOut, TProducer> spanEnum,
             Predicate<TOut> predicate)
             where TProducer : struct, IProducer<TIn, TOut>
+        =>
+            spanEnum.Where(predicate).Single();
+
+        /// <summary> 
+        ///     The single element of a sequence that satisfies a predicate. 
+        /// </summary>
+        public static TOut Single<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Predicate<TOut> predicate)
         =>
             spanEnum.Where(predicate).Single();
 

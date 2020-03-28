@@ -36,6 +36,17 @@ namespace NoAlloq
         }
 
         /// <summary> The sum of a sequence of int. </summary>
+        public static int Sum(this SpanEnumerable<int> spanEnum)
+        {
+            var vector = spanEnum.VectorSum();
+            var accum = vector[0];
+            for (var i = 1; i < Vector<int>.Count; ++i)
+                accum += vector[i];
+
+            return accum;
+        }
+
+        /// <summary> The sum of a sequence of int. </summary>
         public static int Sum(this ReadOnlySpan<int> span)
         {
             var vector = span.VectorSum();
@@ -58,6 +69,16 @@ namespace NoAlloq
             this SpanEnumerable<TIn, TOut, TProducer> spanEnum,
             Func<TOut, int> getValue)
             where TProducer : struct, IProducer<TIn, TOut>
+        =>
+            spanEnum.Select(getValue).Sum();
+
+        /// <summary> 
+        ///     The sum of a sequence, with a delegate returning an integer 
+        ///     for each element of the sequence.
+        /// </summary>
+        public static int Sum<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Func<TOut, int> getValue)
         =>
             spanEnum.Select(getValue).Sum();
 
@@ -108,6 +129,17 @@ namespace NoAlloq
         }
 
         /// <summary> The sum of a sequence of float. </summary>
+        public static float Sum(this SpanEnumerable<float> spanEnum)
+        {
+            var vector = spanEnum.VectorSum();
+            var accum = vector[0];
+            for (var i = 1; i < Vector<float>.Count; ++i)
+                accum += vector[i];
+
+            return accum;
+        }
+
+        /// <summary> The sum of a sequence of float. </summary>
         public static float Sum(this ReadOnlySpan<float> span)
         {
             var vector = span.VectorSum();
@@ -130,6 +162,16 @@ namespace NoAlloq
             this SpanEnumerable<TIn, TOut, TProducer> spanEnum,
             Func<TOut, float> getValue)
             where TProducer : struct, IProducer<TIn, TOut>
+        =>
+            spanEnum.Select(getValue).Sum();
+
+        /// <summary> 
+        ///     The sum of a sequence, with a delegate returning a float 
+        ///     for each element of the sequence.
+        /// </summary>
+        public static float Sum<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Func<TOut, float> getValue)
         =>
             spanEnum.Select(getValue).Sum();
 
@@ -180,6 +222,17 @@ namespace NoAlloq
         }
 
         /// <summary> The sum of a sequence of double. </summary>
+        public static double Sum(this SpanEnumerable<double> spanEnum)
+        {
+            var vector = spanEnum.VectorSum();
+            var accum = vector[0];
+            for (var i = 1; i < Vector<double>.Count; ++i)
+                accum += vector[i];
+
+            return accum;
+        }
+
+        /// <summary> The sum of a sequence of double. </summary>
         public static double Sum(this ReadOnlySpan<double> span)
         {
             var vector = span.VectorSum();
@@ -202,6 +255,16 @@ namespace NoAlloq
             this SpanEnumerable<TIn, TOut, TProducer> spanEnum,
             Func<TOut, double> getValue)
             where TProducer : struct, IProducer<TIn, TOut>
+        =>
+            spanEnum.Select(getValue).Sum();
+
+        /// <summary> 
+        ///     The sum of a sequence, with a delegate returning a float 
+        ///     for each element of the sequence.
+        /// </summary>
+        public static double Sum<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Func<TOut, double> getValue)
         =>
             spanEnum.Select(getValue).Sum();
 
@@ -260,6 +323,35 @@ namespace NoAlloq
         private static Vector<TOut> VectorSum<TOut, TProducer>(
             this SpanEnumerable<TOut, TProducer> spanEnum)
             where TProducer : struct, IProducer<TOut> 
+            where TOut : struct
+        {
+            var accum = Vector<TOut>.Zero;
+            var each = Vector<TOut>.Zero;
+
+            var spans =
+                MemoryMarshal.Cast<Vector<TOut>, TOut>(
+                    MemoryMarshal.CreateSpan(ref each, 1));
+
+            var read = spans;
+
+            while (read.Length == spans.Length)
+            {
+                read = spanEnum.ConsumeInto(spans);
+
+                for (var i = read.Length; i < spans.Length; ++i)
+                    spans[i] = default;
+
+                accum = Vector.Add(accum, each);
+            }
+
+            return accum;
+        }
+
+        /// <summary>
+        ///     SIMD sum of an arbitrary type supported by <see cref="Vector{T}"/>.
+        /// </summary>
+        private static Vector<TOut> VectorSum<TOut>(
+            this SpanEnumerable<TOut> spanEnum)
             where TOut : struct
         {
             var accum = Vector<TOut>.Zero;

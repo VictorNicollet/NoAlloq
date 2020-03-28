@@ -49,6 +49,13 @@ namespace NoAlloq
         =>
             spanEnum.CopyInto(output).ReverseInPlace();
 
+        /// <summary> Copy a sequence into a span, in reverse. </summary>
+        public static Span<TOut> ReverseInto<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Span<TOut> output)
+        =>
+            spanEnum.CopyInto(output).ReverseInPlace();
+
         /// <summary>
         ///     Reverse the contents of a span in place.
         /// </summary>

@@ -33,6 +33,16 @@ namespace NoAlloq
         }
 
         /// <summary> The first element of a sequence. </summary>
+        public static TOut First<TOut>(
+            this SpanEnumerable<TOut> spanEnum)
+        {
+            TOut onStack = default;
+            Span<TOut> outOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            return spanEnum.ConsumeInto(outOnStack).First();
+        }
+
+        /// <summary> The first element of a sequence. </summary>
         public static T First<T>(this ReadOnlySpan<T> span)
         {
             if (span.Length == 0)
@@ -62,6 +72,15 @@ namespace NoAlloq
             this SpanEnumerable<TOut, TProducer> spanEnum,
             Predicate<TOut> predicate)
             where TProducer : struct, IProducer<TOut>
+        =>
+            spanEnum.Where(predicate).First();
+
+        /// <summary> 
+        ///     The first element of a sequence that satisfies a predicate. 
+        /// </summary>
+        public static TOut First<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Predicate<TOut> predicate)
         =>
             spanEnum.Where(predicate).First();
 
@@ -112,6 +131,15 @@ namespace NoAlloq
         }
 
         /// <summary> The first element of a sequence. </summary>
+        public static TOut FirstOrDefault<TOut>(this SpanEnumerable<TOut> spanEnum)
+        {
+            TOut onStack = default;
+            Span<TOut> outOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            return spanEnum.ConsumeInto(outOnStack).FirstOrDefault();
+        }
+
+        /// <summary> The first element of a sequence. </summary>
         public static T FirstOrDefault<T>(this ReadOnlySpan<T> span) => 
             span.Length == 0 ? (default) : span[0];
 
@@ -136,6 +164,15 @@ namespace NoAlloq
             this SpanEnumerable<TOut, TProducer> spanEnum,
             Predicate<TOut> predicate)
             where TProducer : struct, IProducer<TOut>
+        =>
+            spanEnum.Where(predicate).FirstOrDefault();
+
+        /// <summary> 
+        ///     The first element of a sequence that satisfies a predicate. 
+        /// </summary>
+        public static TOut FirstOrDefault<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Predicate<TOut> predicate)
         =>
             spanEnum.Where(predicate).FirstOrDefault();
 

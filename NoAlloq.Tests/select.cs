@@ -38,10 +38,30 @@ namespace NoAlloq.Tests
         }
 
         [Fact]
+        public void times_two_delegate_boxed()
+        {
+            Span<int> values = stackalloc int[4] { 1, 2, 3, 4 };
+            var array = values.Box().Select(v => v * 2).ToArray();
+
+            for (var i = 0; i < values.Length; ++i)
+                Assert.Equal(values[i] * 2, array[i]);
+        }
+
+        [Fact]
         public void times_two_twice_delegate()
         {
             Span<int> values = stackalloc int[4] { 1, 2, 3, 4 };
             var array = values.Select(v => v * 2).Select(v => v * 2).ToArray();
+
+            for (var i = 0; i < values.Length; ++i)
+                Assert.Equal(values[i] * 4, array[i]);
+        }
+
+        [Fact]
+        public void times_two_twice_delegate_boxed()
+        {
+            Span<int> values = stackalloc int[4] { 1, 2, 3, 4 };
+            var array = values.Select(v => v * 2).Box().Select(v => v * 2).ToArray();
 
             for (var i = 0; i < values.Length; ++i)
                 Assert.Equal(values[i] * 4, array[i]);

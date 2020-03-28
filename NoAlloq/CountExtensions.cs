@@ -47,6 +47,23 @@ namespace NoAlloq
         }
 
         /// <summary> The number of elements in a sequence. </summary>
+        public static int Count<TOut>(this SpanEnumerable<TOut> spanEnum)
+        {
+            if (spanEnum.KnownLength)
+                return spanEnum.Length;
+
+            var count = 0;
+
+            TOut onStack = default;
+            var spanOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            while (spanEnum.ConsumeInto(spanOnStack).Length > 0)
+                ++count;
+
+            return count;
+        }
+
+        /// <summary> The number of elements in a sequence. </summary>
         public static int Count<T>(this ReadOnlySpan<T> span) => span.Length;
 
         /// <summary> The number of elements in a sequence. </summary>
@@ -79,6 +96,27 @@ namespace NoAlloq
         public static int CountTrue<TProducer>(
             this SpanEnumerable<bool, TProducer> spanEnum)
             where TProducer : struct, IProducer<bool>
+        {
+            var count = 0;
+
+            long longOnStack = default;
+            Span<bool> onStack =
+                MemoryMarshal.Cast<long, bool>(
+                    MemoryMarshal.CreateSpan(ref longOnStack, 1));
+
+            while (true)
+            {
+                onStack = spanEnum.ConsumeInto(onStack);
+                if (onStack.Length == 0) break;
+
+                count += onStack.CountTrue();
+            }
+
+            return count;
+        }
+
+        /// <summary> The number of true elements in a boolean sequence. </summary>
+        public static int CountTrue(this SpanEnumerable<bool> spanEnum)
         {
             var count = 0;
 
@@ -145,6 +183,29 @@ namespace NoAlloq
             this SpanEnumerable<TOut, TProducer> spanEnum,
             Predicate<TOut> predicate)
             where TProducer : struct, IProducer<TOut>
+        {
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+
+            var count = 0;
+
+            TOut onStack = default;
+            var spanOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            while (spanEnum.ConsumeInto(spanOnStack).Length > 0)
+                if (predicate(onStack))
+                    ++count;
+
+            return count;
+        }
+
+        /// <summary> 
+        ///     The number of elements in a sequence for which the provided 
+        ///     predicate returns true.
+        /// </summary>
+        public static int Count<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Predicate<TOut> predicate)
         {
             if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate));

@@ -3,6 +3,76 @@ using System;
 
 namespace NoAlloq
 {
+    /// <summary> 
+    ///     An enumerable that uses boxing (and therefore, memory allocations)
+    ///     to hide away all types except its output type.
+    /// </summary>
+    /// <see cref="SpanEnumerable{TOut, TProducer}"/>
+    /// <see cref="SpanEnumerable{TIn, TOut, TProducer}"/>
+    /// <see cref="BoxExtensions"/>
+    public ref partial struct SpanEnumerable<TOut>
+    {
+        /// <summary> The input bytes. </summary>
+        /// <remarks>
+        ///     This is a single input span, cast to bytes to hide 
+        ///     its type. If the original enumerable did not have an input,
+        ///     this will be an empty span.
+        /// </remarks>
+        /// <remarks>
+        ///     Not read-only because it is mutated by <see cref="ConsumeInto"/>.
+        /// </remarks>
+        private ReadOnlySpan<byte> _input;
+
+        /// <summary> A *boxed* producer. </summary>
+        private readonly IProducer<byte, TOut> _producer;
+
+        /// <summary> The length of this sequence, -1 if unknown. </summary>
+        /// <remarks>
+        ///     Not read-only because it is mutated by <see cref="ConsumeInto"/>.
+        /// </remarks>
+        private int LengthIfKnown;
+
+        public SpanEnumerable(
+            ReadOnlySpan<byte> input, 
+            IProducer<byte, TOut> producer, 
+            int length)
+        {
+            _input = input;
+            _producer = producer ?? throw new ArgumentNullException(nameof(producer));
+            LengthIfKnown = length;
+        }
+
+        /// <summary> Whether the length of this sequence is known. </summary>
+        public bool KnownLength => LengthIfKnown >= 0;
+
+        /// <summary> The length of this sequence, if known. </summary>
+        public int Length =>
+            KnownLength ? LengthIfKnown :
+            throw new InvalidOperationException("Sequence does not have a known length");
+
+        /// <summary>
+        ///     Takes enough values from the sequence to fill the provided span, 
+        ///     consuming them from the enumerable.
+        /// </summary>
+        /// <remarks>
+        ///     Unlike <c>TakeInto</c>, repeatedly calling this method on the 
+        ///     enumerable will yield different results.
+        /// </remarks>
+        internal Span<TOut> ConsumeInto(Span<TOut> output)
+        {
+            _producer.Produce(ref _input, ref output);
+
+            if (LengthIfKnown >= 0)
+                LengthIfKnown -= output.Length;
+
+            return output;
+        }
+
+        public SpanEnumerable<TOut> Box() => 
+            // Just smile and wave, boys. Smile and wave...
+            this;
+    }
+
     public partial struct SpanEnumerable<TOut, TProducer>
         where TProducer : IProducer<TOut>
     {
@@ -16,20 +86,20 @@ namespace NoAlloq
         /// <remarks>
         ///     Not read-only because it is mutated by <see cref="ConsumeInto"/>.
         /// </remarks>
-        private int _length;
+        internal int LengthIfKnown;
 
         internal SpanEnumerable(TProducer producer, int length)
         {
             Producer = producer;
-            _length = length;
+            LengthIfKnown = length;
         }
 
         /// <summary> Whether the length of this sequence is known. </summary>
-        public bool KnownLength => _length >= 0;
+        public bool KnownLength => LengthIfKnown >= 0;
 
         /// <summary> The length of this sequence, if known. </summary>
         public int Length =>
-            KnownLength ? _length :
+            KnownLength ? LengthIfKnown :
             throw new InvalidOperationException("Sequence does not have a known length");
 
         /// <summary>
@@ -44,12 +114,11 @@ namespace NoAlloq
         {
             Producer.Produce(ref output);
 
-            if (_length >= 0)
-                _length -= output.Length;
+            if (LengthIfKnown >= 0)
+                LengthIfKnown -= output.Length;
 
             return output;
         }
-
     }
 
     public ref partial struct SpanEnumerable<TIn, TOut, TProducer>
@@ -74,21 +143,21 @@ namespace NoAlloq
         /// <remarks>
         ///     Not read-only because it is mutated by <see cref="ConsumeInto"/>.
         /// </remarks>
-        private int _length;
+        internal int LengthIfKnown;
 
         /// <summary> Whether the length of this sequence is known. </summary>
-        public bool KnownLength => _length >= 0;
+        public bool KnownLength => LengthIfKnown >= 0;
 
         /// <summary> The length of this sequence, if known. </summary>
         public int Length =>
-            KnownLength ? _length :
+            KnownLength ? LengthIfKnown :
             throw new InvalidOperationException("Sequence does not have a known length");
 
         internal SpanEnumerable(ReadOnlySpan<TIn> input, TProducer producer, int length)
         {
             Input = input;
             Producer = producer;
-            _length = length;
+            LengthIfKnown = length;
         }
 
         /// <summary>
@@ -103,8 +172,8 @@ namespace NoAlloq
         {
             Producer.Produce(ref Input, ref output);
             
-            if (_length >= 0) 
-                _length -= output.Length;
+            if (LengthIfKnown >= 0) 
+                LengthIfKnown -= output.Length;
             
             return output;
         }

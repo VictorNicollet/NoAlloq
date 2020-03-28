@@ -50,7 +50,24 @@ namespace NoAlloq
             self.Producer.Produce(ref output);
             return output;
         }
-
+        /// <summary>
+        ///     Takes enough values from the sequence to fill the provided span. 
+        /// </summary>
+        /// <remarks>
+        ///     A copy of the enumerable is taken, which means that (beyond any
+        ///     side-effects of consuming values from it) the original 
+        ///     enumerable is unchanged.
+        /// </remarks>
+        /// <returns>
+        ///     Returns the span, maybe resized if there were not enough values 
+        ///     in the enumerable.
+        /// </returns>
+        public static Span<TOut> TakeInto<TOut>(
+            this SpanEnumerable<TOut> self,
+            Span<TOut> output)
+        =>
+            self.ConsumeInto(output);
+        
         /// <summary>
         ///     Takes values from the sequence to fill the 
         ///     provided span, throws if the span is not large enough to 
@@ -93,6 +110,34 @@ namespace NoAlloq
            this SpanEnumerable<TOut, TProducer> spanEnum,
            Span<TOut> output)
            where TProducer : struct, IProducer<TOut>
+        {
+            var result = spanEnum.ConsumeInto(output);
+
+            if (result.Length == output.Length)
+            {
+                TOut more = default;
+                Span<TOut> moreSpan = MemoryMarshal.CreateSpan(ref more, 1);
+                if (spanEnum.ConsumeInto(moreSpan).Length > 0)
+                    throw new ArgumentException(
+                        "Destination span is too small.",
+                        nameof(output));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        ///     Takes values from the sequence to fill the 
+        ///     provided span, throws if the span is not large enough to 
+        ///     contain all elements from the sequence. 
+        /// </summary>
+        /// <returns>
+        ///     Returns the span, maybe resized if 
+        ///     there were not enough values in the enumerable.
+        /// </returns>
+        public static Span<TOut> CopyInto<TOut>(
+           this SpanEnumerable<TOut> spanEnum,
+           Span<TOut> output)
         {
             var result = spanEnum.ConsumeInto(output);
 
@@ -157,6 +202,20 @@ namespace NoAlloq
         }
 
         /// <summary>
+        ///     Takes values from the sequence to fill the provided collection.
+        /// </summary>
+        public static void CopyInto<TOut>(
+           this SpanEnumerable<TOut> spanEnum,
+           ICollection<TOut> output)
+        {
+            TOut more = default;
+            Span<TOut> moreSpan = MemoryMarshal.CreateSpan(ref more, 1);
+
+            while (spanEnum.ConsumeInto(moreSpan).Length > 0)
+                output.Add(more);
+        }
+
+        /// <summary>
         ///     Takes values from the sequence to fill the provided dictionary.
         /// </summary>
         public static void CopyInto<TIn, TOut, TK, TV, TProducer>(
@@ -182,6 +241,22 @@ namespace NoAlloq
            Func<TOut, TK> key,
            Func<TOut, TV> value)
            where TProducer : IProducer<TOut>
+        {
+            TOut more = default;
+            Span<TOut> moreSpan = MemoryMarshal.CreateSpan(ref more, 1);
+
+            while (spanEnum.ConsumeInto(moreSpan).Length > 0)
+                output.Add(key(more), value(more));
+        }
+
+        /// <summary>
+        ///     Takes values from the sequence to fill the provided dictionary.
+        /// </summary>
+        public static void CopyInto<TOut, TK, TV>(
+           this SpanEnumerable<TOut> spanEnum,
+           IDictionary<TK, TV> output,
+           Func<TOut, TK> key,
+           Func<TOut, TV> value)
         {
             TOut more = default;
             Span<TOut> moreSpan = MemoryMarshal.CreateSpan(ref more, 1);

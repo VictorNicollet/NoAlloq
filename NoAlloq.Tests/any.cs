@@ -18,11 +18,31 @@ namespace NoAlloq.Tests
         }
 
         [Fact]
+        public void span_boxed()
+        {
+            Span<int> values = stackalloc int[] { 
+                 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+            };
+
+            Assert.True(values.Box().Any());
+        }
+
+        [Fact]
         public void span_empty()
         {
             Span<int> values = stackalloc int[0];
 
             Assert.False(values.Any());
+        }
+
+        [Fact]
+        public void span_empty_boxed()
+        {
+            Span<int> values = stackalloc int[0];
+
+            Assert.False(values.Box().Any());
         }
 
         [Fact]
@@ -37,12 +57,32 @@ namespace NoAlloq.Tests
             Assert.True(values.Select(v => v * 2).Any());
         }
 
-                [Fact]
+        [Fact]
+        public void span_select_boxed()
+        {
+            Span<int> values = stackalloc int[] { 
+                 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+            };
+
+            Assert.True(values.Select(v => v * 2).Box().Any());
+        }
+
+        [Fact]
         public void span_select_empty()
         {
             Span<int> values = stackalloc int[0];
 
             Assert.False(values.Select(v => v * 2).Any());
+        }
+
+        [Fact]
+        public void span_select_empty_boxed()
+        {
+            Span<int> values = stackalloc int[0];
+
+            Assert.False(values.Select(v => v * 2).Box().Any());
         }
 
         [Fact]
@@ -58,6 +98,18 @@ namespace NoAlloq.Tests
         }
 
         [Fact]
+        public void span_where_boxed()
+        {
+            Span<int> values = stackalloc int[] { 
+                 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+            };
+
+            Assert.True(values.Where(v => v % 2 != 0).Box().Any());
+        }
+
+        [Fact]
         public void span_where_empty()
         {
             Span<int> values = stackalloc int[] { 
@@ -65,6 +117,16 @@ namespace NoAlloq.Tests
             };
 
             Assert.False(values.Where(v => false).Any());
+        }
+
+        [Fact]
+        public void span_where_empty_box()
+        {
+            Span<int> values = stackalloc int[] { 
+                 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+            };
+
+            Assert.False(values.Where(v => false).Box().Any());
         }
         
         [Fact]
@@ -80,11 +142,31 @@ namespace NoAlloq.Tests
         }
         
         [Fact]
+        public void readonly_span_boxed()
+        {
+            ReadOnlySpan<int> values = stackalloc int[] { 
+                 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+            };
+
+            Assert.True(values.Box().Any());
+        }
+        
+        [Fact]
         public void readonly_span_empty()
         {
             ReadOnlySpan<int> values = stackalloc int[0];
 
             Assert.False(values.Any());
+        }
+
+        [Fact]
+        public void readonly_span_empty_boxed()
+        {
+            ReadOnlySpan<int> values = stackalloc int[0];
+
+            Assert.False(values.Box().Any());
         }
 
         [Fact]
@@ -94,9 +176,21 @@ namespace NoAlloq.Tests
         }
 
         [Fact]
+        public void range_boxed()
+        {
+            Assert.True(SpanEnumerable.Range(1, 30).Box().Any());
+        }
+
+        [Fact]
         public void range_empty()
         {
             Assert.False(SpanEnumerable.Range(1, 0).Any());
+        }
+
+        [Fact]
+        public void range_empty_boxed()
+        {
+            Assert.False(SpanEnumerable.Range(1, 0).Box().Any());
         }
 
         [Fact]
@@ -104,6 +198,15 @@ namespace NoAlloq.Tests
         {
             Assert.True(SpanEnumerable.Range(1, 30)
                 .Where(p => p <= 15)
+                .Any());
+        }
+
+        [Fact]
+        public void range_where_boxed()
+        {
+            Assert.True(SpanEnumerable.Range(1, 30)
+                .Where(p => p <= 15)
+                .Box()
                 .Any());
         }
 
@@ -116,15 +219,36 @@ namespace NoAlloq.Tests
         }
 
         [Fact]
+        public void range_where_empty_boxed()
+        {
+            Assert.False(SpanEnumerable.Range(1, 30)
+                .Where(p => p <= 0)
+                .Box()
+                .Any());
+        }
+
+        [Fact]
         public void range_odd()
         {
             Assert.True(SpanEnumerable.Range(1, 29).Any(v => v % 2 != 0));
         }
 
         [Fact]
+        public void range_odd_boxed()
+        {
+            Assert.True(SpanEnumerable.Range(1, 29).Box().Any(v => v % 2 != 0));
+        }
+
+        [Fact]
         public void range_none()
         {
             Assert.False(SpanEnumerable.Range(1, 29).Any(v => v > 30));
+        }
+
+        [Fact]
+        public void range_none_boxed()
+        {
+            Assert.False(SpanEnumerable.Range(1, 29).Box().Any(v => v > 30));
         }
 
         [Fact]
@@ -140,6 +264,18 @@ namespace NoAlloq.Tests
         }
 
         [Fact]
+        public void span_odd_boxed()
+        {
+            Span<int> values = stackalloc int[] { 
+                 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27, 28, 29,
+            };
+
+            Assert.True(values.Box().Any(v => v % 2 != 0));
+        }
+
+        [Fact]
         public void span_odd_none()
         {
             Span<int> values = stackalloc int[] { 
@@ -147,6 +283,16 @@ namespace NoAlloq.Tests
             };
 
             Assert.False(values.Any(v => v % 2 != 0));
+        }
+
+        [Fact]
+        public void span_odd_none_boxed()
+        {
+            Span<int> values = stackalloc int[] { 
+                 2,  4,  6,  8,  10,
+            };
+
+            Assert.False(values.Box().Any(v => v % 2 != 0));
         }
 
         [Fact]
@@ -160,6 +306,18 @@ namespace NoAlloq.Tests
 
             Assert.True(values.Where(v => v <= 15).Any(v => v % 2 != 0));
         }
+
+        [Fact]
+        public void span_where_odd_boxed()
+        {
+            Span<int> values = stackalloc int[] { 
+                 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27, 28, 29,
+            };
+
+            Assert.True(values.Where(v => v <= 15).Box().Any(v => v % 2 != 0));
+        }
         
         [Fact]
         public void span_where_odd_none()
@@ -169,6 +327,16 @@ namespace NoAlloq.Tests
             };
 
             Assert.False(values.Where(v => v <= 15).Any(v => v % 2 != 0));
+        }
+        
+        [Fact]
+        public void span_where_odd_none_boxed()
+        {
+            Span<int> values = stackalloc int[] { 
+                 2,  4,  6,  8,  10
+            };
+
+            Assert.False(values.Where(v => v <= 15).Box().Any(v => v % 2 != 0));
         }
 
         [Fact]
@@ -184,6 +352,18 @@ namespace NoAlloq.Tests
         }
 
         [Fact]
+        public void readonly_span_odd_boxed()
+        {
+            ReadOnlySpan<int> values = stackalloc int[] { 
+                 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27, 28, 29, 
+            };
+
+            Assert.True(values.Box().Any(v => v % 2 != 0));
+        }
+
+        [Fact]
         public void span_true()
         {
             Span<bool> values = stackalloc bool[] { 
@@ -191,6 +371,16 @@ namespace NoAlloq.Tests
             };
 
             Assert.True(values.AnyTrue());
+        }
+
+        [Fact]
+        public void span_true_boxed()
+        {
+            Span<bool> values = stackalloc bool[] { 
+                true, false, true, true, false, false, true
+            };
+
+            Assert.True(values.Box().AnyTrue());
         }
 
         [Fact]
@@ -204,6 +394,16 @@ namespace NoAlloq.Tests
         }
 
         [Fact]
+        public void span_none_true_boxed()
+        {
+            Span<bool> values = stackalloc bool[] { 
+                false, false, false
+            };
+
+            Assert.False(values.Box().AnyTrue());
+        }
+
+        [Fact]
         public void select_true()
         {
             Span<bool> values = stackalloc bool[] { 
@@ -211,6 +411,16 @@ namespace NoAlloq.Tests
             };
 
             Assert.True(values.Select(b => !b).AnyTrue());
+        }
+
+        [Fact]
+        public void select_true_boxed()
+        {
+            Span<bool> values = stackalloc bool[] { 
+                true, false, true, true, false, false, true
+            };
+
+            Assert.True(values.Select(b => !b).Box().AnyTrue());
         }
 
         [Fact]
@@ -222,6 +432,16 @@ namespace NoAlloq.Tests
 
             Assert.False(values.Select(b => false).AnyTrue());
         }
+
+        [Fact]
+        public void select_none_true_boxed()
+        {
+            Span<bool> values = stackalloc bool[] { 
+                true, false, true, true, false, false, true
+            };
+
+            Assert.False(values.Select(b => false).Box().AnyTrue());
+        }
         
         [Fact]
         public void readonly_span_true()
@@ -231,6 +451,16 @@ namespace NoAlloq.Tests
             };
 
             Assert.True(values.AnyTrue());
+        }
+        
+        [Fact]
+        public void readonly_span_true_boxed()
+        {
+            ReadOnlySpan<bool> values = stackalloc bool[] { 
+                true, false, true, true, false, false, true
+            };
+
+            Assert.True(values.Box().AnyTrue());
         }
 
         [Fact]
@@ -242,10 +472,28 @@ namespace NoAlloq.Tests
         }
 
         [Fact]
+        public void range_true_boxed()
+        {
+            Assert.True(SpanEnumerable.Range(1, 30)
+                .Select(v => v % 3 == 0)
+                .Box()
+                .AnyTrue());
+        }
+
+        [Fact]
         public void range_none_true()
         {
             Assert.False(SpanEnumerable.Range(1, 30)
                 .Select(v => v < 0)
+                .AnyTrue());
+        }
+
+        [Fact]
+        public void range_none_true_box()
+        {
+            Assert.False(SpanEnumerable.Range(1, 30)
+                .Select(v => v < 0)
+                .Box()
                 .AnyTrue());
         }
     }

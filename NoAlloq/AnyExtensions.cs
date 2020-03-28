@@ -37,6 +37,18 @@ namespace NoAlloq
         }
 
         /// <summary> Whether a sequence is non-empty. </summary>
+        public static bool Any<TOut>(this SpanEnumerable<TOut> spanEnum)
+        {
+            if (spanEnum.KnownLength)
+                return spanEnum.Length > 0;
+
+            TOut onStack = default;
+            var spanOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            return spanEnum.ConsumeInto(spanOnStack).Length > 0;
+        }
+
+        /// <summary> Whether a sequence is non-empty. </summary>
         public static bool Any<T>(this ReadOnlySpan<T> span) => span.Length > 0;
 
         /// <summary> Whether a sequence is non-empty. </summary>
@@ -62,6 +74,20 @@ namespace NoAlloq
         public static bool AnyTrue<TProducer>(
             this SpanEnumerable<bool, TProducer> spanEnum)
             where TProducer : struct, IProducer<bool>
+        {
+            bool onStack = default;
+            Span<bool> spanOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            while (true)
+            {
+                spanOnStack = spanEnum.ConsumeInto(spanOnStack);
+                if (spanOnStack.Length == 0) return false;
+                if (onStack) return true;
+            }
+        }
+
+        /// <summary> Whether a sequence contains 'true'. </summary>
+        public static bool AnyTrue(this SpanEnumerable<bool> spanEnum)
         {
             bool onStack = default;
             Span<bool> spanOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
@@ -118,6 +144,27 @@ namespace NoAlloq
             this SpanEnumerable<TOut, TProducer> spanEnum,
             Predicate<TOut> predicate)
             where TProducer : struct, IProducer<TOut>
+        {
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+
+            TOut onStack = default;
+            var spanOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            while (spanEnum.ConsumeInto(spanOnStack).Length > 0)
+                if (predicate(onStack))
+                    return true;
+
+            return false;
+        }
+
+        /// <summary> 
+        ///     Whether the predicate returns true for any element
+        ///     in a sequence.
+        /// </summary>
+        public static bool Any<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Predicate<TOut> predicate)
         {
             if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate));

@@ -47,6 +47,22 @@ namespace NoAlloq
         }
 
         /// <summary> The last element of a sequence. </summary>
+        public static TOut Last<TOut>(this SpanEnumerable<TOut> spanEnum)
+        {
+            TOut onStack = default;
+            Span<TOut> outOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            if (spanEnum.ConsumeInto(outOnStack).Length == 0)
+                throw new InvalidOperationException("The input sequence is empty.");
+
+            var last = onStack;
+            while (spanEnum.ConsumeInto(outOnStack).Length > 0)
+                last = onStack;
+
+            return last;
+        }
+
+        /// <summary> The last element of a sequence. </summary>
         public static T Last<T>(this ReadOnlySpan<T> span)
         {
             if (span.Length == 0)
@@ -76,6 +92,15 @@ namespace NoAlloq
             this SpanEnumerable<TOut, TProducer> spanEnum,
             Predicate<TOut> predicate)
             where TProducer : struct, IProducer<TOut>
+        =>
+            spanEnum.Where(predicate).Last();
+
+        /// <summary> 
+        ///     The first element of a sequence that satisfies a predicate. 
+        /// </summary>
+        public static TOut Last<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Predicate<TOut> predicate)
         =>
             spanEnum.Where(predicate).Last();
 
@@ -134,6 +159,20 @@ namespace NoAlloq
         }
 
         /// <summary> The last element of a sequence. </summary>
+        public static TOut LastOrDefault<TOut>(
+            this SpanEnumerable<TOut> spanEnum)
+        {
+            TOut onStack = default;
+            Span<TOut> outOnStack = MemoryMarshal.CreateSpan(ref onStack, 1);
+
+            var last = onStack;
+            while (spanEnum.ConsumeInto(outOnStack).Length > 0)
+                last = onStack;
+
+            return last;
+        }
+
+        /// <summary> The last element of a sequence. </summary>
         public static T LastOrDefault<T>(this ReadOnlySpan<T> span) => 
             span.Length == 0 ? (default) : span[span.Length - 1];
 
@@ -158,6 +197,15 @@ namespace NoAlloq
             this SpanEnumerable<TOut, TProducer> spanEnum,
             Predicate<TOut> predicate)
             where TProducer : struct, IProducer<TOut>
+        =>
+            spanEnum.Where(predicate).LastOrDefault();
+
+        /// <summary> 
+        ///     The last element of a sequence that satisfies a predicate. 
+        /// </summary>
+        public static TOut LastOrDefault<TOut>(
+            this SpanEnumerable<TOut> spanEnum,
+            Predicate<TOut> predicate)
         =>
             spanEnum.Where(predicate).LastOrDefault();
 

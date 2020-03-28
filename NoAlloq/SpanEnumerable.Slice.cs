@@ -3,6 +3,44 @@ using System;
 
 namespace NoAlloq
 {
+    public ref partial struct SpanEnumerable<TOut>
+    {
+        [Obsolete("Use '.Slice()' instead.", true)]
+        public SpanEnumerable<TOut> Take(int count) =>
+            throw new NotSupportedException();
+
+        [Obsolete("Use '.Slice()' instead.", true)]
+        public SpanEnumerable<TOut> Skip(int count) =>
+            throw new NotSupportedException();
+
+        /// <summary>
+        ///     Returns a new sequence that contains only the elements after a certain 
+        ///     position.
+        /// </summary>
+        public SpanEnumerable<TOut> Slice(int offset) =>
+            new SpanEnumerable<TOut>(
+                _input,
+                new SliceProducer<byte, TOut, IProducer<byte,TOut>>(
+                    _producer, offset, int.MaxValue),
+                length:
+                    LengthIfKnown >= offset ? LengthIfKnown - offset :
+                    LengthIfKnown >= 0 ? 0 : -1);
+
+        /// <summary>
+        ///     Returns a new sequence that contains only the elements after a certain 
+        ///     position, and only a limited number of those elements.
+        /// </summary>
+        public SpanEnumerable<TOut> Slice(int offset, int count) =>
+            new SpanEnumerable<TOut>(
+                _input,
+                new SliceProducer<byte, TOut, IProducer<byte, TOut>>(
+                    _producer, offset, count),
+                length:
+                    LengthIfKnown >= offset + count ? count :
+                    LengthIfKnown >= offset ? LengthIfKnown - offset :
+                    -1);
+    }
+
     public ref partial struct SpanEnumerable<TIn, TOut, TProducer>
     {
         [Obsolete("Use '.Slice()' instead.", true)]
@@ -29,8 +67,8 @@ namespace NoAlloq
                 new SliceProducer<TIn, TOut, TProducer>(
                     Producer, offset, int.MaxValue),
                 length: 
-                    _length >= offset ? _length - offset : 
-                    _length >= 0 ? 0 : -1);
+                    LengthIfKnown >= offset ? LengthIfKnown - offset : 
+                    LengthIfKnown >= 0 ? 0 : -1);
 
         /// <summary>
         ///     Returns a new sequence that contains only the elements after a certain 
@@ -44,8 +82,8 @@ namespace NoAlloq
                 new SliceProducer<TIn, TOut, TProducer>(
                     Producer, offset, count),
                 length: 
-                    _length >= offset + count ? count : 
-                    _length >= offset ? _length - offset : 
+                    LengthIfKnown >= offset + count ? count : 
+                    LengthIfKnown >= offset ? LengthIfKnown - offset : 
                     -1);
     }
 
@@ -74,8 +112,8 @@ namespace NoAlloq
                 new SliceProducer<TOut, TProducer>(
                     Producer, offset, count),
                 length:
-                    _length >= offset + count ? count :
-                    _length >= offset ? _length - offset :
+                    LengthIfKnown >= offset + count ? count :
+                    LengthIfKnown >= offset ? LengthIfKnown - offset :
                     -1);
 
         /// <summary>
@@ -89,7 +127,7 @@ namespace NoAlloq
                 new SliceProducer<TOut, TProducer>(
                     Producer, offset, int.MaxValue),
                 length:
-                    _length >= offset ? _length - offset :
-                    _length >= 0 ? 0 : -1);
+                    LengthIfKnown >= offset ? LengthIfKnown - offset :
+                    LengthIfKnown >= 0 ? 0 : -1);
     }
 }

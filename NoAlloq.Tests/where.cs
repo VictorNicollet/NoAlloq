@@ -29,10 +29,28 @@ namespace NoAlloq.Tests
         }
 
         [Fact]
+        public void is_odd_delegate_boxed()
+        {
+            Span<int> values = stackalloc int[4] { 1, 2, 3, 4 };
+            var array = values.Box().Where(v => v % 2 != 0).ToArray();
+
+            Assert.Equal(new[] { 1, 3 }, array);
+        }
+
+        [Fact]
         public void plus_one_is_odd()
         {
             Span<int> values = stackalloc int[4] { 1, 2, 3, 4 };
             var array = values.Select(v => v + 1).Where(v => v % 2 != 0).ToArray();
+
+            Assert.Equal(new[] { 3, 5 }, array);
+        }
+
+        [Fact]
+        public void plus_one_is_odd_boxed()
+        {
+            Span<int> values = stackalloc int[4] { 1, 2, 3, 4 };
+            var array = values.Box().Select(v => v + 1).Where(v => v % 2 != 0).ToArray();
 
             Assert.Equal(new[] { 3, 5 }, array);
         }
