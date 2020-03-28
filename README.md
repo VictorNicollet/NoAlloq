@@ -203,14 +203,6 @@ users.Where(s => s.IsActive)
      .Box() // not allowed, original T is 'User'
 ```
 
-## Issues and Limitations
-
-
-```csharp
-WithAliveUsers(SpanEnumerable<User, User, TProducer> aliveUsers)
-    where TProducer : NoAlloq.Producers.IProducer<User, User>
-```
-
 ## Performance
 
 See the `NoAlloq.Tests/Benchmarks` folder for benchmarks. On the few benchmarks so far, NoAlloq runs faster than LINQ (but still, significantly slower than writing C# code by hand). A few examples:
