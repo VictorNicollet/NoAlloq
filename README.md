@@ -37,6 +37,7 @@ Currently, NoAlloq supports the following methods without any allocation involve
  - `.Count()` and `.Count(Predicate<T>)`, as well as `.CountTrue()` as a shortcut for `.Count(b => b)`.
  - `.Any()` and `.Any(Predicate<T>)`, as well as `.AnyTrue()` as a shortcut for `.Any(b => b)`.
  - `.All(Predicate<T>)`, as well as `.AllTrue()` as a shortcut for `.All(b => b)`.
+ - `.Aggregate()` 
  - `.Single()` and `.Single(Predicate<T>)`.
  - `.Sum()` and `.Sum(Func<TIn, TOut>)` for `int`, `float` and `double`.
  - `SpanEnumerable.Range(first, count)` equivalent to `Enumerable.Range`.
@@ -181,7 +182,7 @@ SpanEnumerable<User, User,
 
 As such, creating a function that returns such a value, or takes such a value as argument, is rather tedious, even by using generics and constraints. To alleviate this, NoAlloq provides the `SpanEnumerable<T>` type which hides the above details from the type _at the cost of a memory allocation_. To convert the result of an arbitrary NoAlloq enumerable to a `SpanEnumerable<T>`, call its `.Box()` method:
 
-```
+```csharp
 Span<int> numbers = stackalloc int[] {...};
 
 var smallest10oddNumbers = numbers
@@ -196,7 +197,7 @@ The `SpanEnumerable<T>` is a `ref struct` that supports the same NoAlloq operati
 
 If your enumerable was constructed from a `Span<T>`, `.Box()` will only be allowed if `T` is an unmanaged type (managed types may contain references, and so cannot be hidden from the compiler).
 
-```
+```csharp
 Span<User> users = ...; // 'User' is a class
 
 users.Where(s => s.IsActive)
