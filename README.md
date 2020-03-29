@@ -280,8 +280,5 @@ var first5 = values
 ## Future Work
 
  - Implement the missing no-allocation functions.
- - Add `IEnumerable<T>.ToSpanEnumerable()` extension method, for LINQ interoperability.
- - Make the `SpanEnumerable` classes work with `foreach`.
- - `.ThenBy()` and `.ThenByDescending()`.
  - Functions with memory backing: `.Distinct()`, `.GroupBy()` and `.ToLookUp()`.
  - More benchmarks.

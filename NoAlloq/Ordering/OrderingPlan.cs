@@ -129,5 +129,11 @@ namespace NoAlloq.Ordering
                     _extractor, _comparer),
                 length: ToBeSorted.Length);
         }
+
+        /// <summary>
+        ///     Returns an enumerator duck-typing-compatible with foreach.
+        /// </summary>
+        public SpanEnumerable<TValue, TValue, OrderingProducer<TValue, TKey, TComparer, TExtractor>>.Enumerator
+            GetEnumerator() => ToEnumerable().GetEnumerator();
     }
 }
