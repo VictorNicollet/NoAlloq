@@ -167,6 +167,18 @@ Dictionary<string, int> dict2 = new Dictionary<string, int>();
 strings.CopyInto(dict2, s => s, s => s.Length)
 ```
 
+#### ToSpanEnumerable
+
+The `ToSpanEnumerable` extension method converts a normal `IEnumerable<T>` into a span enumerable compatible with NoAlloq:
+
+```chsarp
+List<int> values = ...;
+Span<int> copy = stackalloc int[values.Count];
+copy = names.ToSpanEnumerable().CopyInto(copy);
+```
+
+This extension method will invoke `IEnumerable<T>.GetEnumerator()` which will perform at least one allocation (the returned `IEnumerator<T>`).
+
 ## Returning or passing as arguments
 
 Since any type capable of reading from a `Span<T>` must be a `ref struct`, the `SpanEnumerable` defined by NoAlloq cannot be stored as a member in a class or non-`ref` struct and cannot be used within the same function as `await` or `yield return`. 

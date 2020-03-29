@@ -1,5 +1,6 @@
 ﻿using NoAlloq.Producers;
 using System;
+using System.Collections.Generic;
 
 namespace NoAlloq
 {
@@ -224,5 +225,16 @@ namespace NoAlloq
                 new RepeatProducer<T>(count, value),
                 length: count);
         }
+
+        /// <summary> Converts a normal enumerable to a span-enumerable. </summary>
+        public static SpanEnumerable<T, EnumerableProducer<T>> ToSpanEnumerable<T>(
+            this IEnumerable<T> source)
+        =>
+            new SpanEnumerable<T, EnumerableProducer<T>>(
+                new EnumerableProducer<T>(source.GetEnumerator()),
+                length: 
+                    source is ICollection<T> collection 
+                    ? collection.Count
+                    : -1);
     }
 }
