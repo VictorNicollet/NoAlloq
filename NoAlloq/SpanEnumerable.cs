@@ -208,5 +208,21 @@ namespace NoAlloq
                 new RangeProducer(start, start + count - 1), 
                 start + count - 1);
         }
+
+        /// <summary>
+        ///     Generates a sequence that contains one repeated value.
+        /// </summary>
+        public static SpanEnumerable<T, RepeatProducer<T>> Repeat<T>(T value, int count)
+        {
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(
+                    nameof(count),
+                    count,
+                    "Repeat count is out of bounds.");
+
+            return new SpanEnumerable<T, RepeatProducer<T>>(
+                new RepeatProducer<T>(count, value),
+                length: count);
+        }
     }
 }

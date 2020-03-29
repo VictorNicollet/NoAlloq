@@ -41,6 +41,7 @@ Currently, NoAlloq supports the following methods without any allocation involve
  - `.Single()`, `.Single(Predicate<T>)`, `.SingleOrDefault()` and `SingleOrDefault(Predicate<T>)`.
  - `.Sum()` and `.Sum(Func<TIn, TOut>)` for `int`, `float` and `double`.
  - `SpanEnumerable.Range(first, count)` equivalent to `Enumerable.Range`.
+ - `SpanEnumerable.Repeat(value, count)` equivalent to `Enumerable.Repeat`.
 
 Other methods which are obviously possible without allocation (such as `ElementAt`) will be added in the near future.
 
