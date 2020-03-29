@@ -3,7 +3,7 @@ using Xunit;
 
 namespace NoAlloq.Tests
 {
-    public sealed class single
+    public sealed class single_or_default
     {
         public struct IsOdd : IMap<int, bool>
         {
@@ -14,50 +14,28 @@ namespace NoAlloq.Tests
         public void where_is_odd()
         {
             Span<int> values = stackalloc int[3] { 0, 1, 2 };
-            Assert.Equal(1, values.Where(new IsOdd()).Single());
+            Assert.Equal(1, values.Where(new IsOdd()).SingleOrDefault());
         }
 
         [Fact]
         public void where_is_odd_boxed()
         {
             Span<int> values = stackalloc int[3] { 0, 1, 2 };
-            Assert.Equal(1, values.Where(new IsOdd()).Box().Single());
+            Assert.Equal(1, values.Where(new IsOdd()).Box().SingleOrDefault());
         }
 
         [Fact]
         public void where_is_odd_none()
         {
             Span<int> values = stackalloc int[4] { 0, 2, 4, 6 };
-
-            try
-            {
-                var found = values.Where(new IsOdd()).Single();
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.Where(new IsOdd()).SingleOrDefault());
         }
 
         [Fact]
         public void where_is_odd_none_boxed()
         {
             Span<int> values = stackalloc int[4] { 0, 2, 4, 6 };
-
-            try
-            {
-                var found = values.Where(new IsOdd()).Box().Single();
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.Where(new IsOdd()).Box().SingleOrDefault());
         }
 
         [Fact]
@@ -67,7 +45,7 @@ namespace NoAlloq.Tests
 
             try
             {
-                var found = values.Where(new IsOdd()).Single();
+                var found = values.Where(new IsOdd()).SingleOrDefault();
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -85,7 +63,7 @@ namespace NoAlloq.Tests
 
             try
             {
-                var found = values.Where(new IsOdd()).Box().Single();
+                var found = values.Where(new IsOdd()).Box().SingleOrDefault();
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -100,50 +78,28 @@ namespace NoAlloq.Tests
         public void span()
         {
             Span<int> values = stackalloc int[1] { 1 };
-            Assert.Equal(1, values.Single());
+            Assert.Equal(1, values.SingleOrDefault());
         }
 
         [Fact]
         public void span_boxed()
         {
             Span<int> values = stackalloc int[1] { 1 };
-            Assert.Equal(1, values.Box().Single());
+            Assert.Equal(1, values.Box().SingleOrDefault());
         }
 
         [Fact]
         public void span_empty()
         {
             Span<int> values = stackalloc int[0];
-
-            try
-            {
-                values.Single();
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.SingleOrDefault());
         }
 
         [Fact]
         public void span_empty_boxed()
         {
             Span<int> values = stackalloc int[0];
-
-            try
-            {
-                values.Box().Single();
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.Box().SingleOrDefault());
         }
 
         [Fact]
@@ -153,7 +109,7 @@ namespace NoAlloq.Tests
 
             try
             {
-                values.Single();
+                values.SingleOrDefault();
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -171,7 +127,7 @@ namespace NoAlloq.Tests
 
             try
             {
-                values.Box().Single();
+                values.Box().SingleOrDefault();
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -186,50 +142,28 @@ namespace NoAlloq.Tests
         public void readonly_span()
         {
             ReadOnlySpan<int> values = stackalloc int[1] { 1 };
-            Assert.Equal(1, values.Single());
+            Assert.Equal(1, values.SingleOrDefault());
         }
 
         [Fact]
         public void readonly_span_boxed()
         {
             ReadOnlySpan<int> values = stackalloc int[1] { 1 };
-            Assert.Equal(1, values.Box().Single());
+            Assert.Equal(1, values.Box().SingleOrDefault());
         }
 
         [Fact]
         public void readonly_span_empty()
         {
             ReadOnlySpan<int> values = stackalloc int[0];
-
-            try
-            {
-                values.Single();
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.SingleOrDefault());
         }
 
         [Fact]
         public void readonly_span_empty_boxed()
         {
             ReadOnlySpan<int> values = stackalloc int[0];
-
-            try
-            {
-                values.Box().Single();
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.Box().SingleOrDefault());
         }
 
         [Fact]
@@ -239,7 +173,7 @@ namespace NoAlloq.Tests
 
             try
             {
-                values.Single();
+                values.SingleOrDefault();
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -257,7 +191,7 @@ namespace NoAlloq.Tests
 
             try
             {
-                values.Box().Single();
+                values.Box().SingleOrDefault();
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -272,24 +206,14 @@ namespace NoAlloq.Tests
         public void orderby()
         {
             Span<int> values = stackalloc int[] { 1 };
-            Assert.Equal(1, values.OrderByValue(values).Single());
+            Assert.Equal(1, values.OrderByValue(values).SingleOrDefault());
         }
 
         [Fact]
         public void orderby_empty()
         {
             Span<int> values = stackalloc int[] { };
-            try
-            {
-                _ = values.OrderByValue(values).Single();
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.OrderByValue(values).SingleOrDefault());
         }
 
         [Fact]
@@ -298,7 +222,7 @@ namespace NoAlloq.Tests
             Span<int> values = stackalloc int[] { 2, 1 };
             try
             {
-                _ = values.OrderByValue(values).Single();
+                _ = values.OrderByValue(values).SingleOrDefault();
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -313,24 +237,15 @@ namespace NoAlloq.Tests
         public void orderby_odd()
         {
             Span<int> values = stackalloc int[] { 3, 2 };
-            Assert.Equal(3, values.OrderByValue(values).Single(v => v % 2 != 0));
+            Assert.Equal(3, values.OrderByValue(values).SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
         public void orderby_odd_empty()
         {
             Span<int> values = stackalloc int[] { 2 };
-            try
-            {
-                _ = values.OrderByValue(values).Single(v => v % 2 != 0);
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.OrderByValue(values)
+                .SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
@@ -339,7 +254,7 @@ namespace NoAlloq.Tests
             Span<int> values = stackalloc int[] { 3, 2, 1 };
             try
             {
-                _ = values.OrderByValue(values).Single(v => v % 2 != 0);
+                _ = values.OrderByValue(values).SingleOrDefault(v => v % 2 != 0);
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -354,48 +269,28 @@ namespace NoAlloq.Tests
         public void is_odd_delegate()
         {
             Span<int> values = stackalloc int[3] { 0, 1, 2 };
-            Assert.Equal(1, values.Single(v => v % 2 != 0));
+            Assert.Equal(1, values.SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
         public void is_odd_delegate_boxed()
         {
             Span<int> values = stackalloc int[3] { 0, 1, 2 };
-            Assert.Equal(1, values.Box().Single(v => v % 2 != 0));
+            Assert.Equal(1, values.Box().SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
         public void is_odd_delegate_empty()
         {
             Span<int> values = stackalloc int[4] { 0, 2, 4, 6 };
-            try
-            {
-                values.Single(v => v % 2 != 0);
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
-        public void is_odd_delegate_empty_boxe()
+        public void is_odd_delegate_empty_boxed()
         {
             Span<int> values = stackalloc int[4] { 0, 2, 4, 6 };
-            try
-            {
-                values.Box().Single(v => v % 2 != 0);
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.Box().SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
@@ -404,7 +299,7 @@ namespace NoAlloq.Tests
             Span<int> values = stackalloc int[4] { 0, 1, 2, 3 };
             try
             {
-                values.Single(v => v % 2 != 0);
+                values.SingleOrDefault(v => v % 2 != 0);
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -421,7 +316,7 @@ namespace NoAlloq.Tests
             Span<int> values = stackalloc int[4] { 0, 1, 2, 3 };
             try
             {
-                values.Box().Single(v => v % 2 != 0);
+                values.Box().SingleOrDefault(v => v % 2 != 0);
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -436,48 +331,28 @@ namespace NoAlloq.Tests
         public void readonly_is_odd_delegate()
         {
             ReadOnlySpan<int> values = stackalloc int[3] { 0, 1, 2 };
-            Assert.Equal(1, values.Single(v => v % 2 != 0));
+            Assert.Equal(1, values.SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
         public void readonly_is_odd_delegate_boxed()
         {
             ReadOnlySpan<int> values = stackalloc int[3] { 0, 1, 2 };
-            Assert.Equal(1, values.Box().Single(v => v % 2 != 0));
+            Assert.Equal(1, values.Box().SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
         public void readonly_is_odd_delegate_empty()
         {
             ReadOnlySpan<int> values = stackalloc int[4] { 0, 2, 4, 6 };
-            try
-            {
-                values.Single(v => v % 2 != 0);
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
         public void readonly_is_odd_delegate_empty_boxed()
         {
             ReadOnlySpan<int> values = stackalloc int[4] { 0, 2, 4, 6 };
-            try
-            {
-                values.Box().Single(v => v % 2 != 0);
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, values.Box().SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
@@ -486,7 +361,7 @@ namespace NoAlloq.Tests
             ReadOnlySpan<int> values = stackalloc int[4] { 1, 2, 3, 4 };
             try
             {
-                values.Single(v => v % 2 != 0);
+                values.SingleOrDefault(v => v % 2 != 0);
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -503,7 +378,7 @@ namespace NoAlloq.Tests
             ReadOnlySpan<int> values = stackalloc int[4] { 1, 2, 3, 4 };
             try
             {
-                values.Box().Single(v => v % 2 != 0);
+                values.Box().SingleOrDefault(v => v % 2 != 0);
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -518,58 +393,38 @@ namespace NoAlloq.Tests
         public void plus_one_is_odd()
         {
             Span<int> values = stackalloc int[4] { 1, 2, 3, 5 };
-            Assert.Equal(3, values.Select(v => v + 1).Single(v => v % 2 != 0));
+            Assert.Equal(3, values.Select(v => v + 1).SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
         public void plus_one_is_odd_boxed()
         {
             Span<int> values = stackalloc int[4] { 1, 2, 3, 5 };
-            Assert.Equal(3, values.Select(v => v + 1).Box().Single(v => v % 2 != 0));
+            Assert.Equal(3, values.Select(v => v + 1).Box().SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
         public void range()
         {
-            Assert.Equal(5, SpanEnumerable.Range(5, 1).Single());
+            Assert.Equal(5, SpanEnumerable.Range(5, 1).SingleOrDefault());
         }
 
         [Fact]
         public void range_boxed()
         {
-            Assert.Equal(5, SpanEnumerable.Range(5, 1).Box().Single());
+            Assert.Equal(5, SpanEnumerable.Range(5, 1).Box().SingleOrDefault());
         }
 
         [Fact]
         public void range_empty()
         {
-            try
-            {
-                _ = SpanEnumerable.Range(5, 0).Single();
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, SpanEnumerable.Range(5, 0).SingleOrDefault());
         }
 
         [Fact]
         public void range_empty_boxed()
         {
-            try
-            {
-                _ = SpanEnumerable.Range(5, 0).Single();
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, SpanEnumerable.Range(5, 0).SingleOrDefault());
         }
 
         [Fact]
@@ -577,7 +432,7 @@ namespace NoAlloq.Tests
         {
             try
             {
-                _ = SpanEnumerable.Range(5, 2).Single();
+                _ = SpanEnumerable.Range(5, 2).SingleOrDefault();
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -593,7 +448,7 @@ namespace NoAlloq.Tests
         {
             try
             {
-                _ = SpanEnumerable.Range(5, 2).Box().Single();
+                _ = SpanEnumerable.Range(5, 2).Box().SingleOrDefault();
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -607,46 +462,28 @@ namespace NoAlloq.Tests
         [Fact]
         public void range_odd()
         {
-            Assert.Equal(5, SpanEnumerable.Range(4, 3).Single(v => v % 2 != 0));
+            Assert.Equal(5, SpanEnumerable.Range(4, 3).SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
         public void range_odd_boxed()
         {
             Assert.Equal(5, SpanEnumerable.Range(4, 3).Box()
-                .Single(v => v % 2 != 0));
+                .SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
         public void range_odd_empty()
         {
-            try
-            {
-                _ = SpanEnumerable.Range(4, 1).Single(v => v % 2 != 0);
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, SpanEnumerable.Range(4, 1)
+                .SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
         public void range_odd_empty_boxed()
         {
-            try
-            {
-                _ = SpanEnumerable.Range(4, 1).Box().Single(v => v % 2 != 0);
-                Assert.True(false);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal(
-                    "The input sequence is empty.",
-                    e.Message);
-            }
+            Assert.Equal(0, SpanEnumerable.Range(4, 1).Box()
+                .SingleOrDefault(v => v % 2 != 0));
         }
 
         [Fact]
@@ -654,7 +491,7 @@ namespace NoAlloq.Tests
         {
             try
             {
-                _ = SpanEnumerable.Range(5, 3).Single(v => v % 2 != 0);
+                _ = SpanEnumerable.Range(5, 3).SingleOrDefault(v => v % 2 != 0);
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -671,7 +508,7 @@ namespace NoAlloq.Tests
             try
             {
                 _ = SpanEnumerable.Range(5, 3).Box()
-                    .Single(v => v % 2 != 0);
+                    .SingleOrDefault(v => v % 2 != 0);
                 Assert.True(false);
             }
             catch (InvalidOperationException e)
@@ -681,6 +518,5 @@ namespace NoAlloq.Tests
                     e.Message);
             }
         }
-
     }
 }
