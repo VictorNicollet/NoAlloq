@@ -171,7 +171,7 @@ strings.CopyInto(dict2, s => s, s => s.Length)
 
 The `ToSpanEnumerable` extension method converts a normal `IEnumerable<T>` into a span enumerable compatible with NoAlloq:
 
-```chsarp
+```csharp
 List<int> values = ...;
 Span<int> copy = stackalloc int[values.Count];
 copy = names.ToSpanEnumerable().CopyInto(copy);
@@ -204,7 +204,7 @@ As such, creating a function that returns such a value, or takes such a value as
 Span<int> numbers = stackalloc int[] {...};
 
 var smallest10oddNumbers = numbers
-	.Where(n => n % 2 != 1)
+	.Where(n => n % 2 != 0)
 	.OrderByValueDescending(numbers)
 	.Slice(0, 10);
 
