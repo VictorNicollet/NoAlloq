@@ -107,5 +107,16 @@ namespace NoAlloq.Tests
 
             Assert.Equal(new[] { "cd", "aa", "c", "b", "a" }, strings);
         }
+
+        [Fact]
+        public void order_by_after_where()
+        {
+            var strings = new[] { "a", "b", "aa","f", "c", "cd" };
+
+            var backing = new string[strings.Length];
+            var result = strings.AsSpan().Where(data => data.Length < 2).OrderByValue(backing).ToArray();
+
+            Assert.Equal(new[] { "a", "b", "c", "f" }, result);
+        }
     }
 }

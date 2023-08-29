@@ -325,9 +325,9 @@ namespace NoAlloq
             where TComparer : IComparer<TKey>
             where TProducer : IProducer<TIn, TValue>
         {
-            input.CopyInto(backing);
+            var output = input.CopyInto(backing);
             return new OrderingPlan<TValue, TKey, TComparer, TExtractor>(
-                extractor, comparer, backing);
+                extractor, comparer, output);
         }
 
         /// <summary>
