@@ -37,7 +37,8 @@ Currently, NoAlloq supports the following methods without any allocation involve
  - `.Count()` and `.Count(Predicate<T>)`, as well as `.CountTrue()` as a shortcut for `.Count(b => b)`.
  - `.Any()` and `.Any(Predicate<T>)`, as well as `.AnyTrue()` as a shortcut for `.Any(b => b)`.
  - `.All(Predicate<T>)`, as well as `.AllTrue()` as a shortcut for `.All(b => b)`.
- - `.Aggregate()` 
+ - `.Aggregate()`
+ - `.OfType<TSource, TType>()`
  - `.Single()`, `.Single(Predicate<T>)`, `.SingleOrDefault()` and `SingleOrDefault(Predicate<T>)`.
  - `.Sum()` and `.Sum(Func<TIn, TOut>)` for `int`, `float` and `double`.
  - `SpanEnumerable.Range(first, count)` equivalent to `Enumerable.Range`.
